@@ -53,6 +53,59 @@ async function getSunTimes(latitude, longitude) {
     }
 }
 
+// 抛硬币相关变量
+let flipCount = 0;
+const maxFlips = 6;
+const results = [];
+
+// 抛硬币动画和逻辑
+function flipCoin() {
+    if (flipCount >= maxFlips) {
+        return;
+    }
+
+    const coin = document.getElementById('coin');
+    const button = document.getElementById('flip-button');
+    button.disabled = true;
+
+    // 随机决定结果
+    const result = Math.random() < 0.5 ? 1 : 0;
+    results.push(result);
+
+    // 计算最终旋转角度
+    // 如果是正面(1)，旋转到0度；如果是反面(0)，旋转到180度
+    const finalRotation = result === 1 ? 0 : 180;
+    
+    // 重置动画
+    coin.style.animation = 'none';
+    coin.offsetHeight; // 触发重绘
+    
+    // 设置动画和初始状态
+    coin.style.animation = 'flip 1s ease-in-out';
+    
+    // 动画结束后设置最终状态
+    setTimeout(() => {
+        coin.style.animation = 'none';
+        coin.style.transform = `rotateX(${finalRotation}deg)`;
+        updateResults();
+        flipCount++;
+        
+        if (flipCount >= maxFlips) {
+            button.textContent = '已完成6次';
+        } else {
+            button.disabled = false;
+        }
+    }, 1000);
+}
+
+// 更新结果显示
+function updateResults() {
+    const resultList = document.getElementById('result-list');
+    resultList.innerHTML = results.map(result => 
+        `<div class="result-item">${result}</div>`
+    ).join('');
+}
+
 // 初始化
 async function init() {
     // 立即更新一次时间
@@ -68,5 +121,14 @@ async function init() {
     }
 }
 
-// 启动应用
-init(); 
+// 等待 DOM 加载完成后再添加事件监听
+document.addEventListener('DOMContentLoaded', () => {
+    // 添加抛硬币按钮事件监听
+    const flipButton = document.getElementById('flip-button');
+    if (flipButton) {
+        flipButton.addEventListener('click', flipCoin);
+    }
+    
+    // 启动应用
+    init();
+}); 
